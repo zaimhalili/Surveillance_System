@@ -1,175 +1,115 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCheck } from 'react-icons/fa6';
 
 export default function Signup() {
     const navigate = useNavigate();
-    const [form, setForm] = useState({ nome: '', email: '', password: '' });
-    const [showPw, setShowPw] = useState(false);
-    const [agree, setAgree] = useState(false);
+    const [form, setForm] = useState<{
+        name: string, email: string; password: string
+    }>({
+        name: '',
+        email: '',
+        password: ''
+    });
+    const [showPw, setShowPw] = useState<boolean>(false);
+    const [agree, setAgree] = useState<boolean>(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         navigate('/dashboard');
     };
 
-    const strength = (() => {
-        const p = form.password;
-        if (!p.length) return 0;
-        let s = 0;
-        if (p.length >= 8) s++;
-        if (/[A-Z]/.test(p)) s++;
-        if (/[0-9]/.test(p)) s++;
-        if (/[^A-Za-z0-9]/.test(p)) s++;
-        return s;
-    })();
-
-    const strengthInfo = [
-        { label: '', color: '#e4e4e4' },
-        { label: 'Debole', color: '#ef4444' },
-        { label: 'Discreta', color: '#f59e0b' },
-        { label: 'Buona', color: '#3b82f6' },
-        { label: 'Ottima', color: '#16a34a' },
-    ][strength];
-
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', background: '#fff' }}>
-
-            {/* Left - dark image */}
-            <div style={{ width: '46%', position: 'relative', background: '#111', overflow: 'hidden', flexShrink: 0 }}>
+        <div className='h-svh sm:max-h-svh sm:overflow-hidden bg-(--white) flex max-w-360 mx-auto'>
+            {/* Left section */}
+            <aside className='w-1/2 bg-(--white) md:flex hidden py-6 pl-6 items-center h-full'>
                 <img
-                    src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=900&h=1200&fit=crop&auto=format"
-                    alt="Sorveglianza"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3, display: 'block' }}
+                    src="https://images.ctfassets.net/a3peezndovsu/zt0uzbM9jKrt57gBwg7nO/0a0d0d4290e6c8b16998d8da6f9ec69d/ring_security_camera_spotlight_cam_pro_4k_327x327_2x.jpg"
+                    alt="Surveillance"
+                    className='rounded-2xl h-full w-full object-cover max-h-200'
+                    loading='lazy'
                 />
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '48px' }}>
-                    <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', width: 'fit-content' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <i className="fa-solid fa-video" style={{ color: '#1c1c1c', fontSize: '12px' }} />
-                        </div>
-                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff', fontFamily: "'Fira Sans', sans-serif" }}>Smart Surveillance</span>
-                    </Link>
-
-                    <div>
-                        <p style={{ margin: '0 0 20px', fontSize: '11px', fontFamily: "'Fira Code', monospace", color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                            Gratis, per sempre
-                        </p>
-                        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                            {[
-                                'Fino a 2 telecamere gratuite',
-                                'Rilevamento persone AI',
-                                'Notifiche push istantanee',
-                                'Archivio sicuro 7 giorni',
-                            ].map((item) => (
-                                <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <i className="fa-solid fa-check" style={{ color: '#4ade80', fontSize: '12px' }} />
-                                    <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontFamily: "'Fira Sans', sans-serif" }}>{item}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
+            </aside>
             {/* Right - form */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 48px' }}>
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '100%', maxWidth: '360px' }}>
-                        <h1 style={{ margin: '0 0 8px', fontSize: '30px', fontWeight: 600, color: '#1c1c1c', letterSpacing: '-0.8px', fontFamily: "'Fira Sans', sans-serif" }}>Crea il tuo account.</h1>
-                        <p style={{ margin: '0 0 36px', fontSize: '14px', color: '#6b6b6b', fontFamily: "'Fira Sans', sans-serif" }}>Inizia a monitorare la tua casa gratuitamente.</p>
-
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-                            {/* Nome */}
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#1c1c1c', marginBottom: '8px', fontFamily: "'Fira Sans', sans-serif" }}>Nome completo</label>
-                                <div style={{ position: 'relative' }}>
-                                    <i className="fa-solid fa-user" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#bdbdbd', fontSize: '13px', pointerEvents: 'none' }} />
-                                    <input
-                                        type="text" required
-                                        value={form.nome}
-                                        onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                                        placeholder="Marco Rossi"
-                                        style={{ width: '100%', background: '#f6f6f6', border: '1px solid #e4e4e4', borderRadius: '14px', padding: '12px 14px 12px 40px', fontSize: '14px', color: '#1c1c1c', outline: 'none', boxSizing: 'border-box', fontFamily: "'Fira Sans', sans-serif" }}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Email */}
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#1c1c1c', marginBottom: '8px', fontFamily: "'Fira Sans', sans-serif" }}>Email</label>
-                                <div style={{ position: 'relative' }}>
-                                    <i className="fa-solid fa-envelope" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#bdbdbd', fontSize: '13px', pointerEvents: 'none' }} />
-                                    <input
-                                        type="email" required
-                                        value={form.email}
-                                        onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                        placeholder="nome@esempio.it"
-                                        style={{ width: '100%', background: '#f6f6f6', border: '1px solid #e4e4e4', borderRadius: '14px', padding: '12px 14px 12px 40px', fontSize: '14px', color: '#1c1c1c', outline: 'none', boxSizing: 'border-box', fontFamily: "'Fira Sans', sans-serif" }}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Password */}
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#1c1c1c', marginBottom: '8px', fontFamily: "'Fira Sans', sans-serif" }}>Password</label>
-                                <div style={{ position: 'relative' }}>
-                                    <i className="fa-solid fa-lock" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#bdbdbd', fontSize: '13px', pointerEvents: 'none' }} />
-                                    <input
-                                        type={showPw ? 'text' : 'password'} required
-                                        value={form.password}
-                                        onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                        placeholder="Minimo 8 caratteri"
-                                        style={{ width: '100%', background: '#f6f6f6', border: '1px solid #e4e4e4', borderRadius: '14px', padding: '12px 42px 12px 40px', fontSize: '14px', color: '#1c1c1c', outline: 'none', boxSizing: 'border-box', fontFamily: "'Fira Sans', sans-serif" }}
-                                    />
-                                    <button type="button" onClick={() => setShowPw(!showPw)}
-                                        style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#bdbdbd', padding: 0 }}>
-                                        <i className={`fa-solid ${showPw ? 'fa-eye-slash' : 'fa-eye'}`} style={{ fontSize: '13px' }} />
-                                    </button>
-                                </div>
-                                {form.password.length > 0 && (
-                                    <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{ flex: 1, height: '3px', background: '#e4e4e4', borderRadius: '2px', overflow: 'hidden' }}>
-                                            <div style={{ width: `${strength * 25}%`, height: '100%', background: strengthInfo.color, borderRadius: '2px', transition: 'all 0.3s' }} />
-                                        </div>
-                                        <span style={{ fontSize: '11px', color: strengthInfo.color, fontFamily: "'Fira Code', monospace", width: '48px' }}>{strengthInfo.label}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Checkbox */}
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', paddingTop: '4px' }}>
-                                <button type="button" onClick={() => setAgree(!agree)}
-                                    style={{ width: '20px', height: '20px', borderRadius: '8px', border: `1px solid ${agree ? '#1c1c1c' : '#e4e4e4'}`, background: agree ? '#1c1c1c' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, marginTop: '1px', padding: 0 }}>
-                                    {agree && <i className="fa-solid fa-check" style={{ color: '#fff', fontSize: '9px' }} />}
-                                </button>
-                                <p style={{ margin: 0, fontSize: '12px', color: '#6b6b6b', lineHeight: 1.5, fontFamily: "'Fira Sans', sans-serif" }}>
-                                    Accetto i{' '}
-                                    <a href="#" style={{ color: '#1c1c1c', textDecoration: 'underline' }}>Termini di servizio</a>
-                                    {' '}e la{' '}
-                                    <a href="#" style={{ color: '#1c1c1c', textDecoration: 'underline' }}>Privacy Policy</a>
-                                </p>
-                            </div>
-
-                            <button type="submit" disabled={!agree}
-                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: agree ? '#1c1c1c' : '#d4d4d4', color: '#fff', fontSize: '14px', fontWeight: 500, padding: '14px', borderRadius: '14px', border: 'none', cursor: agree ? 'pointer' : 'not-allowed', fontFamily: "'Fira Sans', sans-serif", marginTop: '4px' }}>
-                                Crea account
-                                <i className="fa-solid fa-arrow-right" style={{ fontSize: '11px' }} />
-                            </button>
-                        </form>
-
-                        <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #e4e4e4', textAlign: 'center' }}>
-                            <p style={{ margin: 0, fontSize: '13px', color: '#6b6b6b', fontFamily: "'Fira Sans', sans-serif" }}>
-                                Hai già un account?{' '}
-                                <Link to="/accedi" style={{ color: '#1c1c1c', fontWeight: 600, textDecoration: 'none' }}>Accedi</Link>
-                            </p>
+            <div className="flex flex-col w-full md:w-1/2 md:px-20 px-8 xs:px-12 sm:px-30 justify-center">
+                <h2 className='text-4xl font-bold mb-2'>Create your account.</h2>
+                <p className='text-md pb-8'>Start monitoring your house.</p>
+                <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+                    {/* Name */}
+                    <div>
+                        <label className='text-xs flex pb-2 font-medium w-full'>Name</label>
+                        <div className='relative'>
+                            <FaEnvelope className='absolute left-3.5 top-1/2 -translate-y-1/2 text-[#bdbdbd] text-md pointer-events-none' />
+                            <input
+                                type="text" required
+                                value={form.name}
+                                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                placeholder="John"
+                                className='w-full bg-[#f6f6f6] border border-[#e4e4e4] rounded-2xl py-3 pr-3.5 pl-10 text-sm text-(--black) focus:outline-(--black)'
+                            />
                         </div>
                     </div>
-                </div>
+                    {/* Email */}
+                    <div>
+                        <label className='text-xs flex pb-2 font-medium w-full'>Email</label>
+                        <div className='relative'>
+                            <FaEnvelope className='absolute left-3.5 top-1/2 -translate-y-1/2 text-[#bdbdbd] text-md pointer-events-none' />
+                            <input
+                                type="email" required
+                                value={form.email}
+                                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                placeholder="johndoe@example.com"
+                                className='w-full bg-[#f6f6f6] border border-[#e4e4e4] rounded-2xl py-3 pr-3.5 pl-10 text-sm text-(--black) focus:outline-(--black)'
+                            />
+                        </div>
+                    </div>
 
-                <p style={{ margin: '40px 0 0', fontSize: '12px', color: '#bdbdbd', fontFamily: "'Fira Code', monospace", textAlign: 'center' }}>
-                    © 2026 Smart Surveillance System
-                </p>
+                    {/* Password */}
+                    <div>
+                        <div className='flex justify-between mb-2'>
+                            <label className='text-xs font-medium'>Password</label>
+                        </div>
+                        <div className='relative'>
+                            <FaLock className='absolute left-3.5 top-1/2 -translate-y-1/2 text-[#bdbdbd] text-md pointer-events-none' />
+                            <input
+                                type={showPw ? 'text' : 'password'} required
+                                value={form.password}
+                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                placeholder="••••••••"
+                                className='w-full bg-[#f6f6f6] border border-[#e4e4e4] rounded-2xl py-3 pr-3.5 pl-10 text-sm text-(--black) focus:outline-(--black)'
+                            />
+                            <button type="button" onClick={() => setShowPw(!showPw)} className='absolute right-3.5 top-1/2 -translate-y-1/2 bg-none text-[#bdbdbd]'>
+                                {showPw ? <FaEyeSlash className='text-sm' /> : <FaEye className='text-sm' />}
+                            </button>
+                        </div>
+                    </div>
+                    {/* Checkbox */}
+                    <div className='flex gap-3 items-center'>
+                        <button type="button" onClick={() => setAgree(!agree)} className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 mt-px p-0 ${agree ? 'border-[#1c1c1c] bg-(--black)' : 'border-[#e4e4e4] bg-(--white)'} border`}>
+                            {agree && <FaCheck className='text-(--white) text-xs font-bold' />}
+                        </button>
+                        <p className='m-0 text-xs text-[#6d6d6d] '>
+                            Accetto i{' '}
+                            <Link to={'/signup'} className='text-[#1c1c1c] hover:brightness-70! underline transition-all'>Termini di servizio</Link>
+                            {' '}e la{' '}
+                            <Link to={'/signup'} className='text-[#1c1c1c] hover:brightness-70! underline transition-all'>Privacy Policy</Link>
+                        </p>
+                    </div>
+
+                    <button type="submit" className='flex items-center justify-center gap-2 bg-[#1c1c1c] text-(--white) text-sm font-medium p-3.5 rounded-2xl border-none my-2 hover:bg-[#1c1c1c]/90 transition-all'>
+                        Signup
+                        <FaArrowRight className='text-xs' />
+                    </button>
+                </form>
+                <div className='mt-6 pt-6 border-t border-[#e4e4e4] text-center'>
+                    <p className='m-0 text-sm text-[#6b6b6b]'>
+                        Already have an account?{' '}
+                        <Link to="/login" className='text-[#1c1c1c] font-bold hover:underline! hover:underline-offset-2 transition-all pb-20 xs:pb-10 sm:pb-0 inline'>Login</Link>
+                    </p>
+                </div>
             </div>
+
+
         </div>
     );
 }

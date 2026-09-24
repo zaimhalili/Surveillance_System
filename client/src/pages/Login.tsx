@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa6';
+import Camera from '../assets/Cam1.jpg';
 
 export default function Login() {
     const navigate = useNavigate();
-    const [form, setForm] = useState({ email: '', password: '' });
-    const [showPw, setShowPw] = useState(false);
+    const [form, setForm] = useState<{
+        email: string; password: string
+    }>({
+        email: '',
+        password: ''
+    });
+    const [showPw, setShowPw] = useState<boolean>(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -72,7 +78,7 @@ export default function Login() {
             {/* Right section */}
             <aside className='w-1/2 bg-(--white) md:flex hidden py-6 pr-6 items-center h-full'>
                 <img
-                    src="https://images.unsplash.com/photo-1618482914248-29272d021005?w=900&h=1200&fit=crop&auto=format"
+                    src={Camera}
                     alt="Surveillance"
                     className='rounded-2xl h-full w-full object-cover max-h-200'
                     loading='lazy'
