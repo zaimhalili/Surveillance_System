@@ -34,7 +34,7 @@ export default function Signup() {
     return (
         <div style={{ minHeight: '100vh', display: 'flex', background: '#fff' }}>
 
-            {/* Left — dark image */}
+            {/* Left - dark image */}
             <div style={{ width: '46%', position: 'relative', background: '#111', overflow: 'hidden', flexShrink: 0 }}>
                 <img
                     src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=900&h=1200&fit=crop&auto=format"
@@ -70,7 +70,7 @@ export default function Signup() {
                 </div>
             </div>
 
-            {/* Right — form */}
+            {/* Right - form */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 48px' }}>
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: '100%', maxWidth: '360px' }}>
@@ -173,4 +173,3 @@ export default function Signup() {
         </div>
     );
 }
- 

@@ -2,8 +2,10 @@
 @import "tailwindcss";
 
 :root {
+  /* Main Palette */
   --white: #fdfffc;
   --black: #000000;
+
   --page: #f6f6f6;
   --surface: #ffffff;
   --ink: #1c1c1c;
@@ -24,7 +26,12 @@
   font-family: "Fira Sans", sans-serif;
 }
 
-button {
+*::selection{
+  background-color: var(--black);
+  color: var(--white);
+}
+
+button, Link {
   cursor: pointer;
 }
 
