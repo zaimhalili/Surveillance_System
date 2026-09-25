@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCheck } from 'react-icons/fa6';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCheck , FaUser} from 'react-icons/fa6';
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -39,7 +39,7 @@ export default function Signup() {
                     <div>
                         <label className='text-xs flex pb-2 font-medium w-full'>Name</label>
                         <div className='relative'>
-                            <FaEnvelope className='absolute left-3.5 top-1/2 -translate-y-1/2 text-[#bdbdbd] text-md pointer-events-none' />
+                            <FaUser className='absolute left-3.5 top-1/2 -translate-y-1/2 text-[#bdbdbd] text-md pointer-events-none' />
                             <input
                                 type="text" required
                                 value={form.name}
