@@ -75,7 +75,6 @@ export default function Dashboard() {
         <div className="flex min-h-screen bg-(--page) font-sans text-(--ink)">
             <Sidebar
                 collapsed={collapsed}
-                alertCount={alertCount}
                 onToggle={() => setCollapsed((value) => !value)}
                 onExit={() => navigate("/")}
             />

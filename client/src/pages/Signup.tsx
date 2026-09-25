@@ -88,7 +88,7 @@ export default function Signup() {
                                         type="text" required
                                         value={form.nome}
                                         onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                                        placeholder="Marco Rossi"
+                                        placeholder="John Pork"
                                         style={{ width: '100%', background: '#f6f6f6', border: '1px solid #e4e4e4', borderRadius: '14px', padding: '12px 14px 12px 40px', fontSize: '14px', color: '#1c1c1c', outline: 'none', boxSizing: 'border-box', fontFamily: "'Fira Sans', sans-serif" }}
                                     />
                                 </div>

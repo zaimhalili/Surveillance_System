@@ -14,7 +14,7 @@ export function CameraGrid({
         <section className="min-w-0 flex-1">
             <div className="mb-3.5 flex items-center justify-between gap-3">
                 <p className="text-[13px] font-semibold text-(--ink)">
-                    Telecamere live
+                    Cameras live
                 </p>
                 <span className="font-mono text-[11px] text-(--muted)">
                     {onlineCount}/{cameras.length} online
