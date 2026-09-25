@@ -17,7 +17,7 @@ export function StatsGrid({
   time: Date;
 }) {
   const stats = [
-    { icon: FaVideo, label: "Telecamere", value: cameraCount },
+    { icon: FaVideo, label: "Cameras", value: cameraCount },
     { icon: FaCircleCheck, label: "Online", value: onlineCount },
     { icon: FaTriangleExclamation, label: "Avvisi attivi", value: alertCount },
     {

@@ -119,12 +119,6 @@ export function CameraModal({
                                     </div>
                                 )}
                                 <div className="absolute left-3.5 top-3.5 flex gap-2">
-                                    <div className="flex items-center gap-1.5 rounded-[10px] bg-(--black)/50 px-2.5 py-1.5 backdrop-blur">
-                                        <span className="rec-dot size-1.5 rounded-full bg-(--success)" />
-                                        <span className="font-mono text-[10px] text-(--surface)">
-                                            LIVE
-                                        </span>
-                                    </div>
                                     {detectionActive && (
                                         <div className="flex items-center gap-1.5 rounded-[10px] bg-(--success) px-2.5 py-1.5">
                                             <FaTriangleExclamation className="text-[9px] text-(--surface)" />

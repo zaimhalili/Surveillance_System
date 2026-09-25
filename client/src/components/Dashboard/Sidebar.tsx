@@ -12,20 +12,17 @@ import {
 
 interface SidebarProps {
     collapsed: boolean;
-    alertCount: number;
     onToggle: () => void;
     onExit: () => void;
 }
 
 export function Sidebar({
     collapsed,
-    alertCount,
     onToggle,
     onExit,
 }: SidebarProps) {
     const items = [
-        { icon: FaGrip, label: "Telecamere", active: true },
-        { icon: FaBell, label: "Avvisi", badge: alertCount },
+        { icon: FaGrip, label: "Cameras", active: true },
         { icon: FaChartLine, label: "Attività", badge: 0 },
         { icon: FaGear, label: "Impostazioni", badge: 0 },
     ];
@@ -46,9 +43,9 @@ export function Sidebar({
             </div>
             <nav className="flex flex-1 flex-col gap-0.5 p-2">
                 {items.map(({ icon: Icon, label, active, badge }) => (
-                    <div
+                    <button
                         key={label}
-                        className={`flex items-center gap-2.5 overflow-hidden rounded-xl px-3 py-2.5 ${active ? "bg-(--ink)" : "bg-transparent"}`}
+                        className={`flex items-center overflow-hidden active:scale-95 justify-center rounded-xl transition-all px-3 py-2.5 ${active ? "bg-(--ink) hover:bg-(--ink)/80" : "bg-transparent hover:bg-(--ink)/10"}`}
                     >
                         <Icon
                             className={`w-3.5 shrink-0 text-center text-[13px] ${active ? "text-(--surface)" : "text-(--muted)"}`}
@@ -67,7 +64,7 @@ export function Sidebar({
                                 )}
                             </>
                         )}
-                    </div>
+                    </button>
                 ))}
             </nav>
             <div className="flex flex-col gap-0.5 border-t border-(--line) p-2">
@@ -91,10 +88,10 @@ export function Sidebar({
                     {!collapsed && (
                         <div className="min-w-0">
                             <p className="truncate text-xs font-semibold text-(--ink)">
-                                Marco Rossi
+                                John Pork
                             </p>
                             <p className="font-mono text-[10px] text-(--muted)">
-                                Casa Milano
+                                Main Villa
                             </p>
                         </div>
                     )}
