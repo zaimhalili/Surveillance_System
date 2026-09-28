@@ -1,13 +1,12 @@
 import Navbar from "../components/Navbar";
+import Hero from "../components/Landing/Hero";
 import Footer from "../components/Footer";
 
 const Landing = () => {
     return (
         <>
             <Navbar />
-            <main className="bg-(--white)">
-
-            </main>
+            <Hero />
             <Footer />
         </>
     )
