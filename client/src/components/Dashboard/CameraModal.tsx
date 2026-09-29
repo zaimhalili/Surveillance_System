@@ -1,9 +1,11 @@
+import { useEffect, useRef, useState } from "react";
 import {
     FaBackwardStep,
     FaDownload,
     FaExpand,
     FaForwardStep,
     FaPause,
+    FaPlay,
     FaPerson,
     FaPersonRays,
     FaScissors,
@@ -11,6 +13,7 @@ import {
     FaTriangleExclamation,
     FaVideoSlash,
     FaVolumeHigh,
+    FaVolumeXmark,
     FaXmark,
 } from "react-icons/fa6";
 import { DetectionBox } from "./CameraCard";
@@ -39,7 +42,36 @@ export function CameraModal({
     onClose,
     onSelectCamera,
 }: CameraModalProps) {
+    const modalRef = useRef<HTMLDivElement>(null);
+    const [isPlaying, setIsPlaying] = useState<boolean>(true);
+    const [isMuted, setIsMuted] = useState<boolean>(false);
+
     const cameraAlerts = alerts.filter((alert) => alert.cam === camera.name);
+
+    // Close on Escape key press
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                onClose();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [onClose]);
+
+    // Fullscreen toggle handler
+    const handleToggleFullscreen = () => {
+        if (!modalRef.current) return;
+
+        if (!document.fullscreenElement) {
+            modalRef.current.requestFullscreen().catch((err) => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
     return (
         <div
             className="fixed inset-0 z-200 flex items-center justify-center bg-(--black)/85 p-2 sm:p-6"
@@ -47,11 +79,16 @@ export function CameraModal({
                 if (event.target === event.currentTarget) onClose();
             }}
         >
-            <div className="flex max-h-[94vh] w-full max-w-275 flex-col overflow-hidden rounded-2xl bg-(--surface) sm:rounded-3xl">
+            <div
+                ref={modalRef}
+                className="flex max-h-[94vh] w-full max-w-275 flex-col overflow-hidden rounded-2xl bg-(--surface) sm:rounded-3xl"
+            >
+                {/* Modal Header */}
                 <div className="flex shrink-0 items-center justify-between gap-3 border-b border-(--line) px-4 py-3.5 sm:px-5">
                     <div className="flex min-w-0 items-center gap-3">
                         <span
-                            className={`size-2 shrink-0 rounded-full ${camera.status === "online" ? "rec-dot bg-(--success)" : "bg-(--line)"}`}
+                            className={`size-2 shrink-0 rounded-full ${camera.status === "online" ? "rec-dot bg-(--success)" : "bg-(--line)"
+                                }`}
                         />
                         <div className="min-w-0">
                             <p className="truncate text-[15px] font-semibold text-(--ink)">
@@ -67,7 +104,10 @@ export function CameraModal({
                         {camera.status === "online" && (
                             <button
                                 onClick={onDetect}
-                                className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium ${detecting ? "border-(--ink) bg-(--ink) text-(--surface)" : "border-(--line) bg-(--surface) text-(--ink)"}`}
+                                className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${detecting
+                                        ? "border-(--ink) bg-(--ink) text-(--surface)"
+                                        : "border-(--line) bg-(--surface) text-(--ink)"
+                                    }`}
                             >
                                 <FaPersonRays className="text-xs" />
                                 <span className="hidden sm:inline">
@@ -78,13 +118,16 @@ export function CameraModal({
                         <button
                             aria-label="Chiudi"
                             onClick={onClose}
-                            className="flex size-9 items-center justify-center rounded-xl border border-(--line) bg-(--surface) text-(--muted)"
+                            className="flex size-9 items-center justify-center rounded-xl border border-(--line) bg-(--surface) text-(--muted) hover:text-(--ink)"
                         >
                             <FaXmark className="text-sm" />
                         </button>
                     </div>
                 </div>
+
+                {/* Main Content Area */}
                 <div className="flex min-h-0 flex-1 flex-col overflow-auto lg:flex-row">
+                    {/* Stream View */}
                     <div className="relative min-h-70 flex-1 bg-(--black) sm:min-h-100">
                         {camera.status === "offline" ? (
                             <div className="flex min-h-70 flex-col items-center justify-center gap-3 sm:min-h-100">
@@ -98,7 +141,8 @@ export function CameraModal({
                                 <img
                                     src={camera.imgSrc}
                                     alt={camera.name}
-                                    className="size-full min-h-70 object-cover opacity-65 sm:min-h-100"
+                                    className={`size-full min-h-70 object-cover opacity-65 transition-opacity sm:min-h-100 ${!isPlaying ? "filter brightness-75" : ""
+                                        }`}
                                 />
                                 {detectionActive && camera.detectionBox && (
                                     <>
@@ -136,6 +180,8 @@ export function CameraModal({
                             </>
                         )}
                     </div>
+
+                    {/* Sidebar Details Panel */}
                     <DetailsPanel
                         camera={camera}
                         alerts={cameraAlerts}
@@ -144,30 +190,66 @@ export function CameraModal({
                         detecting={detecting}
                     />
                 </div>
+
+                {/* Video Controls Footer */}
                 <div className="flex shrink-0 items-center justify-between border-t border-(--line) px-4 py-3 sm:px-5">
                     <div className="flex gap-1.5">
-                        {[FaBackwardStep, FaPause, FaForwardStep].map((Icon, index) => (
-                            <button
-                                aria-label={`Controllo ${index + 1}`}
-                                key={index}
-                                className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted)"
-                            >
-                                <Icon className="text-[11px]" />
-                            </button>
-                        ))}
+                        <button
+                            aria-label="Indietro di 10s"
+                            className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
+                        >
+                            <FaBackwardStep className="text-[11px]" />
+                        </button>
+                        <button
+                            aria-label={isPlaying ? "Pausa" : "Riproduci"}
+                            onClick={() => setIsPlaying((prev) => !prev)}
+                            className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
+                        >
+                            {isPlaying ? (
+                                <FaPause className="text-[11px]" />
+                            ) : (
+                                <FaPlay className="text-[11px]" />
+                            )}
+                        </button>
+                        <button
+                            aria-label="Avanti di 10s"
+                            className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
+                        >
+                            <FaForwardStep className="text-[11px]" />
+                        </button>
                     </div>
+
                     <div className="flex gap-1.5">
-                        {[FaVolumeHigh, FaDownload, FaScissors, FaExpand].map(
-                            (Icon, index) => (
-                                <button
-                                    aria-label={`Azione ${index + 1}`}
-                                    key={index}
-                                    className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted)"
-                                >
-                                    <Icon className="text-[11px]" />
-                                </button>
-                            ),
-                        )}
+                        <button
+                            aria-label={isMuted ? "Attiva audio" : "Disattiva audio"}
+                            onClick={() => setIsMuted((prev) => !prev)}
+                            className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
+                        >
+                            {isMuted ? (
+                                <FaVolumeXmark className="text-[11px]" />
+                            ) : (
+                                <FaVolumeHigh className="text-[11px]" />
+                            )}
+                        </button>
+                        <button
+                            aria-label="Scarica registrazione"
+                            className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
+                        >
+                            <FaDownload className="text-[11px]" />
+                        </button>
+                        <button
+                            aria-label="Ritaglia clip"
+                            className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
+                        >
+                            <FaScissors className="text-[11px]" />
+                        </button>
+                        <button
+                            aria-label="Schermo intero"
+                            onClick={handleToggleFullscreen}
+                            className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
+                        >
+                            <FaExpand className="text-[11px]" />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -222,10 +304,12 @@ function DetailsPanel({
                     >
                         <span className="text-xs text-(--muted-dark)">{label}</span>
                         <span
-                            className={`relative h-4.5 w-8 rounded-full ${on ? "bg-(--ink)" : "bg-(--line)"}`}
+                            className={`relative h-4.5 w-8 rounded-full ${on ? "bg-(--ink)" : "bg-(--line)"
+                                }`}
                         >
                             <span
-                                className={`absolute top-0.75 size-3 rounded-full bg-(--surface) transition-[left] ${on ? "left-4.25" : "left-0.75"}`}
+                                className={`absolute top-0.75 size-3 rounded-full bg-(--surface) transition-[left] ${on ? "left-4.25" : "left-0.75"
+                                    }`}
                             />
                         </span>
                     </div>
@@ -266,7 +350,7 @@ function DetailsPanel({
                             <button
                                 key={item.id}
                                 onClick={() => onSelectCamera(item)}
-                                className="flex items-center gap-2.5 rounded-[10px] border border-(--line) bg-(--surface) p-2 text-left"
+                                className="flex items-center gap-2.5 rounded-[10px] border border-(--line) bg-(--surface) p-2 text-left transition-colors hover:bg-(--line)/20"
                             >
                                 <div className="flex h-8 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-(--black)">
                                     {item.imgSrc && (
