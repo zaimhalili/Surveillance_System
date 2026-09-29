@@ -2,7 +2,7 @@ import {
     FaAnglesLeft,
     FaAnglesRight,
     FaArrowRightFromBracket,
-    FaBell,
+    // FaBell,
     FaChartLine,
     FaGear,
     FaGrip,
