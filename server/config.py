@@ -1,6 +1,5 @@
 import os
 
-
 def load_dotenv():
     """Load variables from a local .env file without requiring python-dotenv."""
     env_path = os.path.join(os.path.dirname(__file__), '.env')
