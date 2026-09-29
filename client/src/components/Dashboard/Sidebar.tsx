@@ -38,7 +38,7 @@ export function Sidebar({
                 </div>
                 {!collapsed && (
                     <span className="whitespace-nowrap text-[13px] font-semibold text-(--ink)">
-                        Surveillance
+                        CCTV System
                     </span>
                 )}
             </div>
@@ -46,15 +46,15 @@ export function Sidebar({
                 {items.map(({ icon: Icon, label, active, badge }) => (
                     <button
                         key={label}
-                        className={`flex items-center overflow-hidden active:scale-95 justify-center rounded-xl transition-all px-3 py-2.5 ${active ? "bg-(--ink) hover:bg-(--ink)/80" : "bg-transparent hover:bg-(--ink)/10"}`}
+                        className={`flex items-center overflow-hidden active:scale-95 justify-center rounded-xl transition-all px-3 py-2.5 ${active ? "bg-(--ink) hover:bg-(--ink)/80 text-(--white)" : "bg-transparent hover:bg-(--black) hover:text-(--white)"}`}
                     >
                         <Icon
-                            className={`w-3.5 shrink-0 text-center text-[13px] ${active ? "text-(--surface)" : "text-(--muted)"}`}
+                            className={`w-3.5 shrink-0 text-center text-[13px]`}
                         />
                         {!collapsed && (
                             <>
                                 <span
-                                    className={`flex-1 whitespace-nowrap text-[13px] ${active ? "text-(--surface)" : "text-(--muted)"}`}
+                                    className={`flex-1 whitespace-nowrap text-[13px]`}
                                 >
                                     {label}
                                 </span>
@@ -71,7 +71,7 @@ export function Sidebar({
             <div className="flex flex-col gap-0.5 border-t border-(--line) p-2">
                 <button
                     onClick={onToggle}
-                    className="flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl bg-transparent px-3 py-2.5 text-left hover:bg-(--black) hover:text-(--white)! transition-all"
+                    className="flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl bg-transparent px-3 py-2.5 text-left hover:bg-(--black) hover:text-(--white)! transition-all active:scale-95"
                 >
                     {collapsed ? (
                         <FaAnglesRight className="w-3.5 shrink-0 text-xs" />
@@ -79,15 +79,15 @@ export function Sidebar({
                         <FaAnglesLeft className="w-3.5 shrink-0 text-xs" />
                     )}
                     {!collapsed && (
-                        <span className="text-[13px]">Reduce</span>
+                        <span className="text-xs flex-1">Reduce</span>
                     )}
                 </button>
-                <div className="flex items-center gap-2.5 overflow-hidden justify-center px-3 py-2.5 hover:bg-(--black) hover:text-(--white)! transition-all  rounded-xl">
+                <div className="flex items-center gap-2.5 overflow-hidden justify-center px-3 py-2.5 hover:bg-(--black) hover:text-(--white)! transition-all active:scale-95 rounded-xl">
                     <div className="flex items-center justify-center rounded-full text-xs">
                         <FaUser />
                     </div>
                     {!collapsed && (
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                             <p className="truncate text-xs font-semibold">
                                 John Pork
                             </p>
@@ -99,11 +99,11 @@ export function Sidebar({
                 </div>
                 <button
                     onClick={onExit}
-                    className="flex w-full items-center gap-2.5 overflow-hidden rounded-xl bg-transparent px-3 py-2.5 text-left hover:bg-(--black) hover:text-(--white)! transition-all justify-center"
+                    className="flex w-full items-center gap-2.5 overflow-hidden rounded-xl bg-transparent px-3 py-2.5 text-left hover:bg-(--black) hover:text-(--white)! transition-all justify-center active:scale-95"
                 >
                     <FaArrowRightFromBracket className="w-3.5 shrink-0 text-xs" />
                     {!collapsed && (
-                        <Link to="/" className="text-xs">
+                        <Link to="/" className="text-xs flex-1">
                             Sign out
                         </Link>
                     )}
