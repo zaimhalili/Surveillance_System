@@ -40,7 +40,7 @@ export default function Dashboard() {
                         hour: "2-digit",
                         minute: "2-digit",
                     }),
-                    msg: "Persona rilevata",
+                    msg: "Person detected",
                 },
                 ...previous.slice(0, 9),
             ]);

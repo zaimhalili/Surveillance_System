@@ -3,8 +3,8 @@ import type { Alert, Camera } from "../types/dashboard";
 export const CAMERAS: Camera[] = [
     {
         id: 1,
-        name: "Ingresso principale",
-        location: "Piano terra",
+        name: "Main Entrance",
+        location: "First Floor",
         status: "online",
         hasAlert: true,
         imgSrc:
@@ -16,7 +16,7 @@ export const CAMERAS: Camera[] = [
     {
         id: 2,
         name: "Garage",
-        location: "Esterno",
+        location: "Outside",
         status: "online",
         hasAlert: false,
         imgSrc:
@@ -26,8 +26,8 @@ export const CAMERAS: Camera[] = [
     },
     {
         id: 3,
-        name: "Giardino",
-        location: "Esterno",
+        name: "Backyard",
+        location: "Outside",
         status: "online",
         hasAlert: false,
         imgSrc:
@@ -37,8 +37,8 @@ export const CAMERAS: Camera[] = [
     },
     {
         id: 4,
-        name: "Corridoio",
-        location: "Piano 1",
+        name: "Corridor",
+        location: "Second Floor",
         status: "offline",
         hasAlert: false,
         imgSrc: "",
@@ -47,8 +47,8 @@ export const CAMERAS: Camera[] = [
     },
     {
         id: 5,
-        name: "Salotto",
-        location: "Piano terra",
+        name: "Living Room",
+        location: "First Floor",
         status: "online",
         hasAlert: true,
         imgSrc:
@@ -59,8 +59,8 @@ export const CAMERAS: Camera[] = [
     },
     {
         id: 6,
-        name: "Cucina",
-        location: "Piano terra",
+        name: "Kitchen",
+        location: "First Floor",
         status: "online",
         hasAlert: false,
         imgSrc:
@@ -71,8 +71,8 @@ export const CAMERAS: Camera[] = [
 ];
 
 export const ALERTS: Alert[] = [
-    { id: 1, cam: "Ingresso principale", time: "14:32", msg: "Persona rilevata" },
-    { id: 2, cam: "Salotto", time: "14:18", msg: "Persona rilevata" },
-    { id: 3, cam: "Giardino", time: "13:54", msg: "Movimento rilevato" },
-    { id: 4, cam: "Ingresso principale", time: "13:20", msg: "Persona rilevata" },
+    { id: 1, cam: "Main Entrance", time: "14:32", msg: "Person detected" },
+    { id: 2, cam: "Living Room", time: "14:18", msg: "Person detected" },
+    { id: 3, cam: "Backyard", time: "13:54", msg: "Movement detected" },
+    { id: 4, cam: "Main Entrance", time: "13:20", msg: "Person detected" },
 ];
