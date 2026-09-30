@@ -1,13 +1,14 @@
 import { FaPerson, FaVideoSlash } from "react-icons/fa6";
 import type { Camera } from "./types/dashboard";
-import Cam1 from "../../assets/house1.jpg";
 
 interface CameraCardProps {
     cam: Camera;
+    playbackOffset: number;
+    playbackSyncAt: number;
     onClick: () => void;
 }
 
-export function CameraCard({ cam, onClick }: CameraCardProps) {
+export function CameraCard({ cam, playbackOffset, playbackSyncAt, onClick }: CameraCardProps) {
     return (
         <button
             onClick={onClick}
@@ -22,19 +23,12 @@ export function CameraCard({ cam, onClick }: CameraCardProps) {
                         </span>
                     </div>
                 ) : (
-                    <>
-                        <img
-                            src={Cam1}
-                            alt={cam.name}
-                            className="size-full object-cover opacity-60"
-                        />
-                        {/* {cam.detectionBox && <DetectionBox camId={cam.id} />} */}
-                        {/* {cam.hasAlert && (
-                            <div className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-md bg-(--danger)">
-                                <FaTriangleExclamation className="text-[8px] text-(--surface)" />
-                            </div>
-                        )} */}
-                    </>
+                    <CameraPreview
+                        camera={cam}
+                        playbackOffset={playbackOffset}
+                        playbackSyncAt={playbackSyncAt}
+                        className="size-full object-cover opacity-75"
+                    />
                 )}
             </div>
             <div className="flex items-center justify-between gap-2 px-3 py-2.5">
@@ -52,12 +46,46 @@ export function CameraCard({ cam, onClick }: CameraCardProps) {
     );
 }
 
+export function CameraPreview({
+    camera,
+    playbackOffset,
+    playbackSyncAt,
+    className,
+}: {
+    camera: Camera;
+    playbackOffset: number;
+    playbackSyncAt: number;
+    className: string;
+}) {
+    return (
+        <video
+            key={camera.id}
+            src={camera.videoUrl}
+            aria-label={`${camera.name} camera preview`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className={className}
+            onLoadedMetadata={(event) => {
+                const video = event.currentTarget;
+                if (Number.isFinite(video.duration) && video.duration > 0) {
+                    const elapsed = playbackOffset + Math.max(0, Date.now() - playbackSyncAt) / 1000;
+                    video.currentTime = elapsed % video.duration;
+                }
+                void video.play().catch(() => undefined);
+            }}
+        />
+    );
+}
+
 export function DetectionBox({ camId }: { camId: number }) {
     return (
         <div className={`detect-box camera-${camId}-box`}>
             <div className="absolute -top-4 left-0 rounded-md bg-(--success) px-1.5 py-0.5 font-mono text-[8px] text-(--surface)">
                 <FaPerson className="mr-1 inline" />
-                Persona
+                Person
             </div>
         </div>
     );

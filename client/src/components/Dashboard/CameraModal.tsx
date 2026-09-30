@@ -8,6 +8,7 @@ import {
     FaPlay,
     FaPerson,
     FaPersonRays,
+    FaTowerBroadcast,
     FaShieldHalved,
     FaTriangleExclamation,
     FaVideoSlash,
@@ -15,13 +16,14 @@ import {
     FaVolumeXmark,
     FaXmark,
 } from "react-icons/fa6";
-import { DetectionBox } from "./CameraCard";
+import { CameraPreview, DetectionBox } from "./CameraCard";
 import type { Alert, Camera } from "./types/dashboard";
 
 interface CameraModalProps {
     camera: Camera;
     playbackOffset: number;
     playbackSyncAt: number;
+    initialMuted?: boolean;
     alerts: Alert[];
     detecting: boolean;
     detectionActive: boolean;
@@ -36,6 +38,7 @@ export function CameraModal({
     camera,
     playbackOffset,
     playbackSyncAt,
+    initialMuted = true,
     alerts,
     detecting,
     detectionActive,
@@ -47,8 +50,12 @@ export function CameraModal({
 }: CameraModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const wasVideoFullscreenRef = useRef(false);
+    const fullscreenExitAtRef = useRef(0);
     const [isPlaying, setIsPlaying] = useState<boolean>(true);
-    const [isMuted, setIsMuted] = useState<boolean>(true);
+    const [isMuted, setIsMuted] = useState<boolean>(initialMuted);
+    const [isLive, setIsLive] = useState(true);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const [videoError, setVideoError] = useState(false);
 
     const cameraAlerts = alerts.filter((alert) => alert.cam === camera.name);
@@ -57,23 +64,40 @@ export function CameraModal({
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
-                onClose();
+                if (document.fullscreenElement === videoRef.current) {
+                    void document.exitFullscreen().catch(() => undefined);
+                } else if (Date.now() - fullscreenExitAtRef.current < 500) {
+                    fullscreenExitAtRef.current = 0;
+                } else {
+                    onClose();
+                }
             }
         };
+        const handleFullscreenChange = () => {
+            const isVideoFullscreen = document.fullscreenElement === videoRef.current;
+            if (wasVideoFullscreenRef.current && !isVideoFullscreen) {
+                fullscreenExitAtRef.current = Date.now();
+            }
+            wasVideoFullscreenRef.current = isVideoFullscreen;
+            setIsFullscreen(isVideoFullscreen);
+        };
         window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+        };
     }, [onClose]);
 
     // Fullscreen toggle handler
     const handleToggleFullscreen = () => {
-        if (!modalRef.current) return;
+        const video = videoRef.current;
+        if (!video) return;
 
         if (!document.fullscreenElement) {
-            modalRef.current.requestFullscreen().catch((err) => {
-                console.error(`Error attempting to enable fullscreen: ${err.message}`);
-            });
+            void video.requestFullscreen().catch(() => undefined);
         } else {
-            document.exitFullscreen();
+            void document.exitFullscreen().catch(() => undefined);
         }
     };
 
@@ -85,6 +109,23 @@ export function CameraModal({
         } else {
             video.pause();
         }
+        setIsLive(false);
+    };
+
+    const handleGoLive = () => {
+        const video = videoRef.current;
+        if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
+        const elapsed = playbackOffset + Math.max(0, Date.now() - playbackSyncAt) / 1000;
+        video.currentTime = elapsed % video.duration;
+        setIsLive(true);
+        void video.play().catch(() => setIsPlaying(false));
+    };
+
+    const handleSeek = (seconds: number) => {
+        const video = videoRef.current;
+        if (!video || !Number.isFinite(video.duration)) return;
+        video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+        setIsLive(false);
     };
 
     return (
@@ -120,18 +161,18 @@ export function CameraModal({
                             <button
                                 onClick={onDetect}
                                 className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${detecting
-                                        ? "border-(--ink) bg-(--ink) text-(--surface)"
-                                        : "border-(--line) bg-(--surface) text-(--ink)"
+                                    ? "border-(--ink) bg-(--ink) text-(--surface)"
+                                    : "border-(--line) bg-(--surface) text-(--ink)"
                                     }`}
                             >
                                 <FaPersonRays className="text-xs" />
                                 <span className="hidden sm:inline">
-                                    {detecting ? "Stop rilevamento" : "Avvia rilevamento"}
+                                    {detecting ? "Stop detection" : "Start detection"}
                                 </span>
                             </button>
                         )}
                         <button
-                            aria-label="Chiudi"
+                            aria-label="Close camera"
                             onClick={onClose}
                             className="flex size-9 items-center justify-center rounded-xl border border-(--line) bg-(--surface) text-(--muted) hover:text-(--ink)"
                         >
@@ -148,7 +189,7 @@ export function CameraModal({
                             <div className="flex min-h-70 flex-col items-center justify-center gap-3 sm:min-h-100">
                                 <FaVideoSlash className="text-4xl text-(--muted-dark)" />
                                 <p className="font-mono text-sm text-(--muted-dark)">
-                                    Telecamera disconnessa
+                                    Camera disconnected
                                 </p>
                             </div>
                         ) : (
@@ -159,6 +200,7 @@ export function CameraModal({
                                     aria-label={`${camera.name} recording`}
                                     autoPlay
                                     loop
+                                    controls={isFullscreen}
                                     muted={isMuted}
                                     playsInline
                                     preload="auto"
@@ -169,6 +211,7 @@ export function CameraModal({
                                             const elapsed = playbackOffset + Math.max(0, Date.now() - playbackSyncAt) / 1000;
                                             video.currentTime = elapsed % video.duration;
                                         }
+                                        setIsLive(true);
                                         setVideoError(false);
                                         void video.play().catch(() => setIsPlaying(false));
                                     }}
@@ -178,7 +221,7 @@ export function CameraModal({
                                 />
                                 {videoError && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-(--black)">
-                                        <p className="font-mono text-sm text-(--muted-dark)">Registrazione non disponibile</p>
+                                        <p className="font-mono text-sm text-(--muted-dark)">Recording unavailable</p>
                                     </div>
                                 )}
                                 {detectionActive && camera.detectionBox && (
@@ -194,7 +237,7 @@ export function CameraModal({
                                         <div className="flex items-center gap-2.5 rounded-[14px] bg-(--black)/60 px-5 py-3">
                                             <span className="spin size-3.5 rounded-full border-2 border-(--surface)/30 border-t-(--surface)" />
                                             <span className="font-mono text-xs text-(--surface)">
-                                                Analisi in corso...
+                                                Analyzing...
                                             </span>
                                         </div>
                                     </div>
@@ -204,14 +247,14 @@ export function CameraModal({
                                         <div className="flex items-center gap-1.5 rounded-[10px] bg-(--success) px-2.5 py-1.5">
                                             <FaTriangleExclamation className="text-[9px] text-(--surface)" />
                                             <span className="font-mono text-[10px] text-(--surface)">
-                                                Persona rilevata
+                                                Person detected
                                             </span>
                                         </div>
                                     )}
                                 </div>
                                 <div className="absolute right-3.5 top-3.5 rounded-[10px] bg-(--black)/50 px-2.5 py-1.5 backdrop-blur">
                                     <span className="font-mono text-[10px] text-(--surface)">
-                                        {time.toLocaleTimeString("it-IT")}
+                                        {isLive ? "LIVE" : time.toLocaleTimeString("en-US")}
                                     </span>
                                 </div>
                             </>
@@ -221,6 +264,8 @@ export function CameraModal({
                     {/* Sidebar Details Panel */}
                     <DetailsPanel
                         camera={camera}
+                        playbackOffset={playbackOffset}
+                        playbackSyncAt={playbackSyncAt}
                         alerts={cameraAlerts}
                         cameras={cameras}
                         onSelectCamera={onSelectCamera}
@@ -232,16 +277,18 @@ export function CameraModal({
                 <div className="flex shrink-0 items-center justify-between border-t border-(--line) px-4 py-3 sm:px-5">
                     <div className="flex gap-1.5">
                         <button
-                            aria-label="Indietro di 10s"
-                            onClick={() => {
-                                if (videoRef.current) videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 10);
-                            }}
+                            type="button"
+                            aria-label="Back 10 seconds"
+                            title="Back 10 seconds"
+                            onClick={() => handleSeek(-10)}
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
                             <FaBackwardStep className="text-[11px]" />
                         </button>
                         <button
-                            aria-label={isPlaying ? "Pausa" : "Riproduci"}
+                            type="button"
+                            aria-label={isPlaying ? "Pause" : "Play"}
+                            title={isPlaying ? "Pause" : "Play"}
                             onClick={handleTogglePlayback}
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
@@ -252,10 +299,10 @@ export function CameraModal({
                             )}
                         </button>
                         <button
-                            aria-label="Avanti di 10s"
-                            onClick={() => {
-                                if (videoRef.current) videoRef.current.currentTime = Math.min(videoRef.current.duration, videoRef.current.currentTime + 10);
-                            }}
+                            type="button"
+                            aria-label="Forward 10 seconds"
+                            title="Forward 10 seconds"
+                            onClick={() => handleSeek(10)}
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
                             <FaForwardStep className="text-[11px]" />
@@ -264,7 +311,9 @@ export function CameraModal({
 
                     <div className="flex gap-1.5">
                         <button
-                            aria-label={isMuted ? "Attiva audio" : "Disattiva audio"}
+                            type="button"
+                            aria-label={isMuted ? "Unmute" : "Mute"}
+                            title={isMuted ? "Unmute" : "Mute"}
                             onClick={() => setIsMuted((prev) => !prev)}
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
@@ -274,8 +323,21 @@ export function CameraModal({
                                 <FaVolumeHigh className="text-[11px]" />
                             )}
                         </button>
+                        {!isLive && (
+                            <button
+                                type="button"
+                                aria-label="Go live"
+                                title="Go live"
+                                onClick={handleGoLive}
+                                className="flex h-8 items-center gap-1.5 rounded-[10px] border border-(--success) px-2 text-[10px] font-semibold text-(--success)"
+                            >
+                                <FaTowerBroadcast />
+                                <span className="hidden sm:inline">Go Live</span>
+                            </button>
+                        )}
                         <a
-                            aria-label="Scarica registrazione"
+                            aria-label="Download recording"
+                            title="Download recording"
                             href={camera.videoUrl}
                             download
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
@@ -283,7 +345,9 @@ export function CameraModal({
                             <FaDownload className="text-[11px]" />
                         </a>
                         <button
-                            aria-label="Schermo intero"
+                            type="button"
+                            aria-label="Full screen video"
+                            title="Full screen video"
                             onClick={handleToggleFullscreen}
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
@@ -298,12 +362,16 @@ export function CameraModal({
 
 function DetailsPanel({
     camera,
+    playbackOffset,
+    playbackSyncAt,
     alerts,
     cameras,
     onSelectCamera,
     detecting,
 }: {
     camera: Camera;
+    playbackOffset: number;
+    playbackSyncAt: number;
     alerts: Alert[];
     cameras: Camera[];
     onSelectCamera: (camera: Camera) => void;
@@ -312,12 +380,12 @@ function DetailsPanel({
     return (
         <aside className="w-full shrink-0 overflow-y-auto border-t border-(--line) bg-(--surface) lg:w-65 lg:border-l lg:border-t-0">
             <div className="border-b border-(--line) p-4">
-                <SectionTitle>Informazioni</SectionTitle>
+                <SectionTitle>Information</SectionTitle>
                 {[
-                    ["Risoluzione", camera.resolution],
+                    ["Resolution", camera.resolution],
                     ["Frame rate", `${camera.fps} fps`],
-                    ["Posizione", camera.location],
-                    ["Stato", camera.status === "online" ? "Online" : "Offline"],
+                    ["Location", camera.location],
+                    ["Status", camera.status === "online" ? "Online" : "Offline"],
                 ].map(([label, value]) => (
                     <div
                         key={label}
@@ -331,36 +399,28 @@ function DetailsPanel({
                 ))}
             </div>
             <div className="border-b border-(--line) p-4">
-                <SectionTitle>Rilevamento</SectionTitle>
+                <SectionTitle>Playback</SectionTitle>
                 {[
-                    ["Persone", detecting],
-                    ["Notifiche push", true],
-                    ["Registrazione", true],
-                ].map(([label, on]) => (
+                    ["Timeline", "Shared"],
+                    ["Recording", "Looping sample"],
+                    ["Detection", detecting ? "Active" : "Standby"],
+                ].map(([label, value]) => (
                     <div
                         key={String(label)}
                         className="flex items-center justify-between gap-3 pb-2 last:pb-0"
                     >
                         <span className="text-xs text-(--muted-dark)">{label}</span>
-                        <span
-                            className={`relative h-4.5 w-8 rounded-full ${on ? "bg-(--ink)" : "bg-(--line)"
-                                }`}
-                        >
-                            <span
-                                className={`absolute top-0.75 size-3 rounded-full bg-(--surface) transition-[left] ${on ? "left-4.25" : "left-0.75"
-                                    }`}
-                            />
-                        </span>
+                        <span className="font-mono text-[10px] text-(--ink)">{value}</span>
                     </div>
                 ))}
             </div>
             <div className="p-4">
-                <SectionTitle>Registro avvisi</SectionTitle>
+                <SectionTitle>Alert log</SectionTitle>
                 {alerts.length === 0 ? (
                     <div className="flex flex-col items-center gap-2 pt-5">
                         <FaShieldHalved className="text-2xl text-(--line)" />
                         <p className="font-mono text-[11px] text-(--muted-light)">
-                            Nessun avviso
+                            No alerts
                         </p>
                     </div>
                 ) : (
@@ -380,7 +440,7 @@ function DetailsPanel({
                 )}
             </div>
             <div className="border-t border-(--line) p-4">
-                <SectionTitle>Altre telecamere</SectionTitle>
+                <SectionTitle>Other cameras</SectionTitle>
                 <div className="flex flex-col gap-1.5">
                     {cameras
                         .filter((item) => item.id !== camera.id)
@@ -392,13 +452,12 @@ function DetailsPanel({
                                 className="flex items-center gap-2.5 rounded-[10px] border border-(--line) bg-(--surface) p-2 text-left transition-colors hover:bg-(--line)/20"
                             >
                                 <div className="flex h-8 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-(--black)">
-                                    {item.imgSrc && (
-                                        <img
-                                            src={item.imgSrc}
-                                            alt={item.name}
-                                            className="size-full object-cover opacity-60"
-                                        />
-                                    )}
+                                    <CameraPreview
+                                        camera={item}
+                                        playbackOffset={playbackOffset}
+                                        playbackSyncAt={playbackSyncAt}
+                                        className="size-full object-cover opacity-70"
+                                    />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="truncate text-[11px] font-medium text-(--ink)">

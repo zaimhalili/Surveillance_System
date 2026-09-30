@@ -19,11 +19,11 @@ export function StatsGrid({
   const stats = [
     { icon: FaVideo, label: "Cameras", value: cameraCount },
     { icon: FaCircleCheck, label: "Online", value: onlineCount },
-    { icon: FaTriangleExclamation, label: "Avvisi attivi", value: alertCount },
+    { icon: FaTriangleExclamation, label: "Active alerts", value: alertCount },
     {
       icon: FaClock,
-      label: "Ora corrente",
-      value: time.toLocaleTimeString("it-IT", {
+      label: "Current time",
+      value: time.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
       }),

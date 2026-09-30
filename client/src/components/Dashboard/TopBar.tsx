@@ -3,16 +3,18 @@ import { FaBell } from "react-icons/fa6";
 export function TopBar({
   alertCount,
   time,
+  onAlertsClick,
 }: {
   alertCount: number;
   time: Date;
+  onAlertsClick: () => void;
 }) {
   return (
     <header className="flex min-h-16 shrink-0 items-center justify-between gap-4 border-b border-(--line) bg-(--surface) px-6 max-sm:px-4">
       <div>
         <p className="text-sm font-semibold text-(--ink)">Main Villa</p>
         <p className="font-mono text-[11px] capitalize text-(--muted)">
-          {time.toLocaleDateString("it-IT", {
+          {time.toLocaleDateString("en-US", {
             weekday: "long",
             day: "numeric",
             month: "long",
@@ -21,7 +23,10 @@ export function TopBar({
       </div>
       <div className="flex items-center gap-3">
         <button
-          aria-label="Apri avvisi"
+          type="button"
+          aria-label="Open activity"
+          title="Open activity"
+          onClick={onAlertsClick}
           className="relative flex size-9 items-center justify-center rounded-xl border border-(--line) bg-(--surface)"
         >
           <FaBell className="text-sm text-(--muted)" />
