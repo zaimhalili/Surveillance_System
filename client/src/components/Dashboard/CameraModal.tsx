@@ -50,8 +50,7 @@ export function CameraModal({
 }: CameraModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
-    const wasVideoFullscreenRef = useRef(false);
-    const fullscreenExitAtRef = useRef(0);
+    const escapeExitsFullscreenRef = useRef(false);
     const [isPlaying, setIsPlaying] = useState<boolean>(true);
     const [isMuted, setIsMuted] = useState<boolean>(initialMuted);
     const [isLive, setIsLive] = useState(true);
@@ -64,10 +63,11 @@ export function CameraModal({
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
-                if (document.fullscreenElement === videoRef.current) {
-                    void document.exitFullscreen().catch(() => undefined);
-                } else if (Date.now() - fullscreenExitAtRef.current < 500) {
-                    fullscreenExitAtRef.current = 0;
+                if (escapeExitsFullscreenRef.current) {
+                    escapeExitsFullscreenRef.current = false;
+                    if (document.fullscreenElement) {
+                        void document.exitFullscreen().catch(() => undefined);
+                    }
                 } else {
                     onClose();
                 }
@@ -75,10 +75,11 @@ export function CameraModal({
         };
         const handleFullscreenChange = () => {
             const isVideoFullscreen = document.fullscreenElement === videoRef.current;
-            if (wasVideoFullscreenRef.current && !isVideoFullscreen) {
-                fullscreenExitAtRef.current = Date.now();
+            if (!isVideoFullscreen) {
+                window.setTimeout(() => {
+                    escapeExitsFullscreenRef.current = false;
+                }, 1000);
             }
-            wasVideoFullscreenRef.current = isVideoFullscreen;
             setIsFullscreen(isVideoFullscreen);
         };
         window.addEventListener("keydown", handleKeyDown);
@@ -95,7 +96,10 @@ export function CameraModal({
         if (!video) return;
 
         if (!document.fullscreenElement) {
-            void video.requestFullscreen().catch(() => undefined);
+            escapeExitsFullscreenRef.current = true;
+            void video.requestFullscreen().catch(() => {
+                escapeExitsFullscreenRef.current = false;
+            });
         } else {
             void document.exitFullscreen().catch(() => undefined);
         }
