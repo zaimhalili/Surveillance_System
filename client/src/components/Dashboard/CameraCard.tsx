@@ -1,4 +1,4 @@
-import { FaPerson, FaTriangleExclamation, FaVideoSlash } from "react-icons/fa6";
+import { FaPerson, FaVideoSlash } from "react-icons/fa6";
 import type { Camera } from "./types/dashboard";
 import Cam1 from "../../assets/house1.jpg";
 

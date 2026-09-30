@@ -40,7 +40,7 @@ export default function Dashboard() {
                         hour: "2-digit",
                         minute: "2-digit",
                     }),
-                    msg: "Persona rilevata",
+                    msg: "Person detected",
                 },
                 ...previous.slice(0, 9),
             ]);
@@ -78,7 +78,7 @@ export default function Dashboard() {
                 onToggle={() => setCollapsed((value) => !value)}
                 onExit={() => navigate("/")}
             />
-            <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto max-h-screen">
                 <TopBar alertCount={alertCount} time={time} />
                 <main className="flex-1 overflow-y-auto p-6 max-sm:p-4">
                     <div className="flex flex-col gap-5">

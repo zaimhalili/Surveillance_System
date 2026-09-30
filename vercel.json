@@ -1,0 +1,23 @@
+{
+    "version": 2,
+    "services": {
+        "frontend": {
+            "root": "client",
+            "framework": "vite"
+        },
+        "backend": {
+            "root": "server",
+            "framework": "flask"
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "http://backend/api/$1"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "http://frontend/$1"
+        }
+    ]
+}
