@@ -20,8 +20,8 @@ export default function Dashboard() {
         receivedAt: 0,
     });
     const [selected, setSelected] = useState<Camera | null>(null);
-    const [detecting, setDetecting] = useState(false);
-    const [detectionActive, setDetectionActive] = useState(false);
+    const [allDetectionEnabled, setAllDetectionEnabled] = useState(false);
+    const [scanningCameraId, setScanningCameraId] = useState<number | null>(null);
     const [liveAlerts, setLiveAlerts] = useState<Alert[]>(ALERTS);
     const [time, setTime] = useState(new Date());
     const [collapsed, setCollapsed] = useState(false);
@@ -29,6 +29,7 @@ export default function Dashboard() {
     const [startMuted, setStartMuted] = useState(true);
     const [detectionAlertsEnabled, setDetectionAlertsEnabled] = useState(true);
     const alertIdRef = useRef(10);
+    const detectionScanIndexRef = useRef(0);
 
     const handleCameraData = useEffectEvent((data: CameraData) => {
         startTransition(() => {
@@ -60,26 +61,35 @@ export default function Dashboard() {
     }, []);
 
     useEffect(() => {
-        if (!detecting) return;
-        const timer = setTimeout(() => {
-            setDetectionActive(true);
+        if (!allDetectionEnabled || cameras.length === 0) {
+            setScanningCameraId(null);
+            return;
+        }
+
+        const scanCamera = () => {
+            const camera = cameras[detectionScanIndexRef.current % cameras.length];
+            detectionScanIndexRef.current += 1;
+            setScanningCameraId(camera.id);
             if (!detectionAlertsEnabled) return;
             alertIdRef.current += 1;
             setLiveAlerts((previous) => [
                 {
                     id: alertIdRef.current,
-                    cam: selected?.name ?? "Camera",
+                    cam: camera.name,
                     time: new Date().toLocaleTimeString("en-US", {
                         hour: "2-digit",
                         minute: "2-digit",
                     }),
-                    msg: "Person detected",
+                    msg: "Person detected (demo)",
                 },
                 ...previous.slice(0, 9),
             ]);
-        }, 900);
-        return () => clearTimeout(timer);
-    }, [detecting, detectionAlertsEnabled, selected]);
+        };
+
+        scanCamera();
+        const timer = window.setInterval(scanCamera, 5000);
+        return () => window.clearInterval(timer);
+    }, [allDetectionEnabled, cameras, detectionAlertsEnabled]);
 
     const onlineCount = cameras.filter(
         (camera) => camera.status === "online",
@@ -87,14 +97,10 @@ export default function Dashboard() {
     const alertCount = liveAlerts.length;
     const closeCamera = () => {
         setSelected(null);
-        setDetecting(false);
-        setDetectionActive(false);
     };
     const selectCamera = (camera: Camera) => {
         setActiveSection("cameras");
         setSelected(camera);
-        setDetecting(false);
-        setDetectionActive(false);
     };
 
     return (
@@ -138,9 +144,10 @@ export default function Dashboard() {
                                 <div className="flex items-start gap-4 max-xl:flex-col">
                                     <CameraGrid
                                         cameras={cameras}
-                                        playbackOffset={playbackSync.offset}
-                                        playbackSyncAt={playbackSync.receivedAt}
                                         onlineCount={onlineCount}
+                                        detectionEnabled={allDetectionEnabled}
+                                        scanningCameraId={scanningCameraId}
+                                        onToggleDetection={() => setAllDetectionEnabled((value) => !value)}
                                         onSelect={setSelected}
                                     />
                                     <div className="w-60 shrink-0 max-xl:w-full">
@@ -180,14 +187,9 @@ export default function Dashboard() {
                     playbackSyncAt={playbackSync.receivedAt}
                     initialMuted={startMuted}
                     alerts={liveAlerts}
-                    detecting={detecting}
-                    detectionActive={detectionActive}
+                    detectionEnabled={allDetectionEnabled}
                     time={time}
                     cameras={cameras}
-                    onDetect={() => {
-                        setDetectionActive(false);
-                        setDetecting((value) => !value);
-                    }}
                     onClose={closeCamera}
                     onSelectCamera={selectCamera}
                 />

@@ -3,12 +3,12 @@ import type { Camera } from "./types/dashboard";
 
 interface CameraCardProps {
     cam: Camera;
-    playbackOffset: number;
-    playbackSyncAt: number;
+    detectionEnabled: boolean;
+    scanning: boolean;
     onClick: () => void;
 }
 
-export function CameraCard({ cam, playbackOffset, playbackSyncAt, onClick }: CameraCardProps) {
+export function CameraCard({ cam, detectionEnabled, scanning, onClick }: CameraCardProps) {
     return (
         <button
             onClick={onClick}
@@ -23,12 +23,17 @@ export function CameraCard({ cam, playbackOffset, playbackSyncAt, onClick }: Cam
                         </span>
                     </div>
                 ) : (
-                    <CameraPreview
-                        camera={cam}
-                        playbackOffset={playbackOffset}
-                        playbackSyncAt={playbackSyncAt}
-                        className="size-full object-cover opacity-75"
+                    <img
+                        src={cam.imgSrc}
+                        alt={`${cam.name} camera preview`}
+                        loading="lazy"
+                        className="size-full object-cover"
                     />
+                )}
+                {detectionEnabled && cam.status === "online" && (
+                    <span className="absolute left-2 top-2 rounded-md bg-(--success) px-2 py-1 font-mono text-[9px] text-(--surface)">
+                        {scanning ? "Demo scan" : "Detection on"}
+                    </span>
                 )}
             </div>
             <div className="flex items-center justify-between gap-2 px-3 py-2.5">
@@ -48,34 +53,19 @@ export function CameraCard({ cam, playbackOffset, playbackSyncAt, onClick }: Cam
 
 export function CameraPreview({
     camera,
-    playbackOffset,
-    playbackSyncAt,
     className,
 }: {
     camera: Camera;
-    playbackOffset: number;
-    playbackSyncAt: number;
+    playbackOffset?: number;
+    playbackSyncAt?: number;
     className: string;
 }) {
     return (
-        <video
-            key={camera.id}
-            src={camera.videoUrl}
-            aria-label={`${camera.name} camera preview`}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
+        <img
+            src={camera.imgSrc}
+            alt={`${camera.name} camera preview`}
+            loading="lazy"
             className={className}
-            onLoadedMetadata={(event) => {
-                const video = event.currentTarget;
-                if (Number.isFinite(video.duration) && video.duration > 0) {
-                    const elapsed = playbackOffset + Math.max(0, Date.now() - playbackSyncAt) / 1000;
-                    video.currentTime = elapsed % video.duration;
-                }
-                void video.play().catch(() => undefined);
-            }}
         />
     );
 }

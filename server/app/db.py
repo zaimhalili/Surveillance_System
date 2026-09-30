@@ -4,12 +4,9 @@ from pathlib import Path
 
 
 CAMERAS = [
-    (1, 'Main Entrance', 'First Floor', 1, 'entrance.mp4', '1920x1080', 30),
-    (2, 'Garage', 'Outside', 0, 'garage.mp4', '1920x1080', 25),
-    (3, 'Backyard', 'Outside', 0, 'entrance.mp4', '2560x1440', 30),
-    (4, 'Corridor', 'Second Floor', 0, 'entrance.mp4', '1280x720', 20),
-    (5, 'Living Room', 'First Floor', 1, 'garage.mp4', '1920x1080', 30),
-    (6, 'Kitchen', 'First Floor', 0, 'garage.mp4', '1920x1080', 25),
+    (1, 'Main Entrance', 'First Floor', 1, 'entrance.mp4', '3840x2160', 25),
+    (2, 'Garage', 'Outside', 0, 'garage.mp4', '3840x2160', 60),
+    (3, 'Backyard', 'Outside', 0, 'backyard.mp4', '3840x2160', 24),
 ]
 
 
@@ -40,10 +37,21 @@ def initialize_database(database_path: str) -> None:
             )'''
         )
         connection.executemany(
-            '''INSERT OR IGNORE INTO cameras
+            '''INSERT INTO cameras
                 (id, name, location, has_alert, video_file, resolution, fps)
-                VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    name = excluded.name,
+                    location = excluded.location,
+                    has_alert = excluded.has_alert,
+                    video_file = excluded.video_file,
+                    resolution = excluded.resolution,
+                    fps = excluded.fps''',
             CAMERAS,
+        )
+        connection.execute(
+            'DELETE FROM cameras WHERE id NOT IN (?, ?, ?)',
+            tuple(camera[0] for camera in CAMERAS),
         )
         connection.execute(
             'INSERT OR IGNORE INTO playback_state (id, started_at) VALUES (1, ?)',

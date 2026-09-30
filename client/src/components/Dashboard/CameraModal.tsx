@@ -7,16 +7,14 @@ import {
     FaPause,
     FaPlay,
     FaPerson,
-    FaPersonRays,
     FaTowerBroadcast,
     FaShieldHalved,
-    FaTriangleExclamation,
     FaVideoSlash,
     FaVolumeHigh,
     FaVolumeXmark,
     FaXmark,
 } from "react-icons/fa6";
-import { CameraPreview, DetectionBox } from "./CameraCard";
+import { CameraPreview } from "./CameraCard";
 import type { Alert, Camera } from "./types/dashboard";
 
 interface CameraModalProps {
@@ -25,11 +23,9 @@ interface CameraModalProps {
     playbackSyncAt: number;
     initialMuted?: boolean;
     alerts: Alert[];
-    detecting: boolean;
-    detectionActive: boolean;
+    detectionEnabled: boolean;
     time: Date;
     cameras: Camera[];
-    onDetect: () => void;
     onClose: () => void;
     onSelectCamera: (camera: Camera) => void;
 }
@@ -40,11 +36,9 @@ export function CameraModal({
     playbackSyncAt,
     initialMuted = true,
     alerts,
-    detecting,
-    detectionActive,
+    detectionEnabled,
     time,
     cameras,
-    onDetect,
     onClose,
     onSelectCamera,
 }: CameraModalProps) {
@@ -161,20 +155,6 @@ export function CameraModal({
                         </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                        {camera.status === "online" && (
-                            <button
-                                onClick={onDetect}
-                                className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${detecting
-                                    ? "border-(--ink) bg-(--ink) text-(--surface)"
-                                    : "border-(--line) bg-(--surface) text-(--ink)"
-                                    }`}
-                            >
-                                <FaPersonRays className="text-xs" />
-                                <span className="hidden sm:inline">
-                                    {detecting ? "Stop detection" : "Start detection"}
-                                </span>
-                            </button>
-                        )}
                         <button
                             aria-label="Close camera"
                             onClick={onClose}
@@ -228,31 +208,10 @@ export function CameraModal({
                                         <p className="font-mono text-sm text-(--muted-dark)">Recording unavailable</p>
                                     </div>
                                 )}
-                                {detectionActive && camera.detectionBox && (
-                                    <>
-                                        <DetectionBox camId={camera.id} />
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <span className="hidden" />
-                                        </div>
-                                    </>
-                                )}
-                                {detecting && !detectionActive && (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="flex items-center gap-2.5 rounded-[14px] bg-(--black)/60 px-5 py-3">
-                                            <span className="spin size-3.5 rounded-full border-2 border-(--surface)/30 border-t-(--surface)" />
-                                            <span className="font-mono text-xs text-(--surface)">
-                                                Analyzing...
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
                                 <div className="absolute left-3.5 top-3.5 flex gap-2">
-                                    {detectionActive && (
-                                        <div className="flex items-center gap-1.5 rounded-[10px] bg-(--success) px-2.5 py-1.5">
-                                            <FaTriangleExclamation className="text-[9px] text-(--surface)" />
-                                            <span className="font-mono text-[10px] text-(--surface)">
-                                                Person detected
-                                            </span>
+                                    {detectionEnabled && (
+                                        <div className="rounded-[10px] bg-(--success) px-2.5 py-1.5">
+                                            <span className="font-mono text-[10px] text-(--surface)">Detection demo active</span>
                                         </div>
                                     )}
                                 </div>
@@ -273,7 +232,7 @@ export function CameraModal({
                         alerts={cameraAlerts}
                         cameras={cameras}
                         onSelectCamera={onSelectCamera}
-                        detecting={detecting}
+                        detectionEnabled={detectionEnabled}
                     />
                 </div>
 
@@ -371,7 +330,7 @@ function DetailsPanel({
     alerts,
     cameras,
     onSelectCamera,
-    detecting,
+    detectionEnabled,
 }: {
     camera: Camera;
     playbackOffset: number;
@@ -379,7 +338,7 @@ function DetailsPanel({
     alerts: Alert[];
     cameras: Camera[];
     onSelectCamera: (camera: Camera) => void;
-    detecting: boolean;
+    detectionEnabled: boolean;
 }) {
     return (
         <aside className="w-full shrink-0 overflow-y-auto border-t border-(--line) bg-(--surface) lg:w-65 lg:border-l lg:border-t-0">
@@ -407,7 +366,7 @@ function DetailsPanel({
                 {[
                     ["Timeline", "Shared"],
                     ["Recording", "Looping sample"],
-                    ["Detection", detecting ? "Active" : "Standby"],
+                    ["Detection demo", detectionEnabled ? "On" : "Off"],
                 ].map(([label, value]) => (
                     <div
                         key={String(label)}

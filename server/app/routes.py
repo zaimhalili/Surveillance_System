@@ -18,7 +18,7 @@ def get_cameras():
             'location': camera['location'],
             'status': 'online',
             'hasAlert': bool(camera['has_alert']),
-            'imgSrc': '',
+            'imgSrc': f"/camera-thumbnails/camera-{camera['id']}.jpg",
             'resolution': camera['resolution'],
             'fps': str(camera['fps']),
             'videoUrl': url_for('main.camera_video', camera_id=camera['id']),
