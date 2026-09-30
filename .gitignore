@@ -1,1 +1,6 @@
 toDo.md
+
+# Python runtime files
+__pycache__/
+*.py[cod]
+server/data/

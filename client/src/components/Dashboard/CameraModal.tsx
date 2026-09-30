@@ -8,7 +8,6 @@ import {
     FaPlay,
     FaPerson,
     FaPersonRays,
-    FaScissors,
     FaShieldHalved,
     FaTriangleExclamation,
     FaVideoSlash,
@@ -21,6 +20,8 @@ import type { Alert, Camera } from "./types/dashboard";
 
 interface CameraModalProps {
     camera: Camera;
+    playbackOffset: number;
+    playbackSyncAt: number;
     alerts: Alert[];
     detecting: boolean;
     detectionActive: boolean;
@@ -33,6 +34,8 @@ interface CameraModalProps {
 
 export function CameraModal({
     camera,
+    playbackOffset,
+    playbackSyncAt,
     alerts,
     detecting,
     detectionActive,
@@ -43,8 +46,10 @@ export function CameraModal({
     onSelectCamera,
 }: CameraModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState<boolean>(true);
-    const [isMuted, setIsMuted] = useState<boolean>(false);
+    const [isMuted, setIsMuted] = useState<boolean>(true);
+    const [videoError, setVideoError] = useState(false);
 
     const cameraAlerts = alerts.filter((alert) => alert.cam === camera.name);
 
@@ -69,6 +74,16 @@ export function CameraModal({
             });
         } else {
             document.exitFullscreen();
+        }
+    };
+
+    const handleTogglePlayback = () => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (video.paused) {
+            void video.play().catch(() => setIsPlaying(false));
+        } else {
+            video.pause();
         }
     };
 
@@ -138,12 +153,34 @@ export function CameraModal({
                             </div>
                         ) : (
                             <>
-                                <img
-                                    src={camera.imgSrc}
-                                    alt={camera.name}
-                                    className={`size-full min-h-70 object-cover opacity-65 transition-opacity sm:min-h-100 ${!isPlaying ? "filter brightness-75" : ""
-                                        }`}
+                                <video
+                                    ref={videoRef}
+                                    src={camera.videoUrl}
+                                    aria-label={`${camera.name} recording`}
+                                    autoPlay
+                                    loop
+                                    muted={isMuted}
+                                    playsInline
+                                    preload="auto"
+                                    className="size-full min-h-70 object-contain sm:min-h-100"
+                                    onLoadedMetadata={(event) => {
+                                        const video = event.currentTarget;
+                                        if (Number.isFinite(video.duration) && video.duration > 0) {
+                                            const elapsed = playbackOffset + Math.max(0, Date.now() - playbackSyncAt) / 1000;
+                                            video.currentTime = elapsed % video.duration;
+                                        }
+                                        setVideoError(false);
+                                        void video.play().catch(() => setIsPlaying(false));
+                                    }}
+                                    onPlay={() => setIsPlaying(true)}
+                                    onPause={() => setIsPlaying(false)}
+                                    onError={() => setVideoError(true)}
                                 />
+                                {videoError && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-(--black)">
+                                        <p className="font-mono text-sm text-(--muted-dark)">Registrazione non disponibile</p>
+                                    </div>
+                                )}
                                 {detectionActive && camera.detectionBox && (
                                     <>
                                         <DetectionBox camId={camera.id} />
@@ -196,13 +233,16 @@ export function CameraModal({
                     <div className="flex gap-1.5">
                         <button
                             aria-label="Indietro di 10s"
+                            onClick={() => {
+                                if (videoRef.current) videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 10);
+                            }}
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
                             <FaBackwardStep className="text-[11px]" />
                         </button>
                         <button
                             aria-label={isPlaying ? "Pausa" : "Riproduci"}
-                            onClick={() => setIsPlaying((prev) => !prev)}
+                            onClick={handleTogglePlayback}
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
                             {isPlaying ? (
@@ -213,6 +253,9 @@ export function CameraModal({
                         </button>
                         <button
                             aria-label="Avanti di 10s"
+                            onClick={() => {
+                                if (videoRef.current) videoRef.current.currentTime = Math.min(videoRef.current.duration, videoRef.current.currentTime + 10);
+                            }}
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
                             <FaForwardStep className="text-[11px]" />
@@ -231,18 +274,14 @@ export function CameraModal({
                                 <FaVolumeHigh className="text-[11px]" />
                             )}
                         </button>
-                        <button
+                        <a
                             aria-label="Scarica registrazione"
+                            href={camera.videoUrl}
+                            download
                             className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
                         >
                             <FaDownload className="text-[11px]" />
-                        </button>
-                        <button
-                            aria-label="Ritaglia clip"
-                            className="flex size-8 items-center justify-center rounded-[10px] border border-(--line) bg-(--surface) text-(--muted) transition-colors hover:text-(--ink)"
-                        >
-                            <FaScissors className="text-[11px]" />
-                        </button>
+                        </a>
                         <button
                             aria-label="Schermo intero"
                             onClick={handleToggleFullscreen}

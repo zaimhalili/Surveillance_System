@@ -1,4 +1,7 @@
 import os
+from pathlib import Path
+
+SERVER_DIR = Path(__file__).resolve().parent
 
 def load_dotenv():
     """Load variables from a local .env file without requiring python-dotenv."""
@@ -19,6 +22,5 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
-    ORACLE_USER = os.getenv('ORACLE_USER', 'admin')
-    ORACLE_PASSWORD = os.getenv('ORACLE_PASSWORD', 'password')
-    ORACLE_DSN = os.getenv('ORACLE_DSN', 'localhost:1521/XEPDB1')
+    DATABASE_PATH = os.getenv('DATABASE_PATH', str(SERVER_DIR / 'data' / 'surveillance.db'))
+    VIDEO_DIRECTORY = SERVER_DIR / 'media'

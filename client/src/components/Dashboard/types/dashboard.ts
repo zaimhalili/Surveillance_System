@@ -7,6 +7,7 @@ export interface Camera {
     status: "online" | "offline";
     hasAlert: boolean;
     imgSrc: string;
+    videoUrl: string;
     resolution: string;
     fps: string;
     detectionBox?: boolean;

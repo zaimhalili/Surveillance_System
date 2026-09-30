@@ -1,39 +1,54 @@
-from flask import Blueprint, Response, jsonify, request
-from app.camera import VideoCamera
-from app.db import log_event  # Optional: log when stream starts
+import time
+from pathlib import Path
+
+from flask import Blueprint, abort, current_app, jsonify, send_file, url_for
+from app.db import get_db_connection
 
 main_bp = Blueprint('main', __name__)
-camera = None
-
-def get_camera():
-    global camera
-    if camera is None:
-        camera = VideoCamera("assets/video/sample_cctv.mp4")
-    return camera
-
-def generate_frames(cam):
-    while True:
-        frame = cam.get_frame()
-        if frame is not None:
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-@main_bp.route('/api/video_feed')
-def video_feed():
-    return Response(
-        generate_frames(get_camera()),
-        mimetype='multipart/x-mixed-replace; boundary=frame'
-    )
 
 @main_bp.route('/api/cameras', methods=['GET'])
 def get_cameras():
-    # Mock or DB query returning camera status for your grid
-    cameras = [
-        {"id": "cam-1", "name": "Main Entrance", "location": "First Floor", "status": "online"},
-        {"id": "cam-2", "name": "Garage", "location": "Outside", "status": "online"},
-        {"id": "cam-3", "name": "Backyard", "location": "Outside", "status": "online"},
-        {"id": "cam-4", "name": "Corridor", "location": "Second Floor", "status": "offline"},
-        {"id": "cam-5", "name": "Living Room", "location": "First Floor", "status": "online"},
-        {"id": "cam-6", "name": "Kitchen", "location": "First Floor", "status": "online"},
-    ]
-    return jsonify(cameras)
+    with get_db_connection(current_app.config['DATABASE_PATH']) as connection:
+        cameras = connection.execute('SELECT * FROM cameras ORDER BY id').fetchall()
+
+    return jsonify([
+        {
+            'id': camera['id'],
+            'name': camera['name'],
+            'location': camera['location'],
+            'status': 'online',
+            'hasAlert': bool(camera['has_alert']),
+            'imgSrc': '',
+            'resolution': camera['resolution'],
+            'fps': str(camera['fps']),
+            'videoUrl': url_for('main.camera_video', camera_id=camera['id']),
+        }
+        for camera in cameras
+    ])
+
+
+@main_bp.route('/api/cameras/<int:camera_id>/video', methods=['GET'])
+def camera_video(camera_id: int):
+    with get_db_connection(current_app.config['DATABASE_PATH']) as connection:
+        camera = connection.execute(
+            'SELECT video_file FROM cameras WHERE id = ?', (camera_id,)
+        ).fetchone()
+
+    if camera is None:
+        abort(404)
+
+    video_path = Path(current_app.config['VIDEO_DIRECTORY']) / camera['video_file']
+    if not video_path.is_file():
+        abort(404, description='Camera recording is not available')
+
+    return send_file(video_path, mimetype='video/mp4', conditional=True)
+
+
+@main_bp.route('/api/sync-time', methods=['GET'])
+def get_sync_time():
+    with get_db_connection(current_app.config['DATABASE_PATH']) as connection:
+        state = connection.execute(
+            'SELECT started_at FROM playback_state WHERE id = 1'
+        ).fetchone()
+
+    return jsonify({'playbackOffset': max(0, time.time() - state['started_at'])})
