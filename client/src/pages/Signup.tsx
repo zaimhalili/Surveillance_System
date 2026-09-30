@@ -26,7 +26,7 @@ export default function Signup() {
                 <img
                     src="https://images.ctfassets.net/a3peezndovsu/zt0uzbM9jKrt57gBwg7nO/0a0d0d4290e6c8b16998d8da6f9ec69d/ring_security_camera_spotlight_cam_pro_4k_327x327_2x.jpg"
                     alt="Surveillance"
-                    className='rounded-2xl h-full w-full object-cover max-h-200'
+                    className='rounded-2xl h-full w-full object-cover max-h-200 bg-(--muted)'
                     loading='lazy'
                 />
             </aside>
@@ -96,7 +96,7 @@ export default function Signup() {
                         </p>
                     </div>
 
-                    <button type="submit" className='flex items-center justify-center gap-2 bg-[#1c1c1c] text-(--white) text-sm font-medium p-3.5 rounded-2xl border-none my-2 hover:bg-[#1c1c1c]/90 transition-all'>
+                    <button type="submit" className='flex items-center justify-center gap-2 bg-[#1c1c1c] text-(--white) text-sm font-medium p-3.5 rounded-2xl border-none my-2 hover:bg-[#1c1c1c]/90 transition-all active:scale-99'>
                         Signup
                         <FaArrowRight className='text-xs' />
                     </button>

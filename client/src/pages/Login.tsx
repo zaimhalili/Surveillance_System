@@ -62,7 +62,7 @@ export default function Login() {
                         </div>
                     </div>
 
-                    <button type="submit" className='flex items-center justify-center gap-2 bg-[#1c1c1c] text-(--white) text-sm font-medium p-3.5 rounded-2xl border-none my-2 hover:bg-[#1c1c1c]/90 transition-all'>
+                    <button type="submit" className='flex items-center justify-center gap-2 bg-[#1c1c1c] text-(--white) text-sm font-medium p-3.5 rounded-2xl border-none my-2 hover:bg-[#1c1c1c]/90 transition-all active:scale-99'>
                         Login
                         <FaArrowRight className='text-xs' />
                     </button>
@@ -80,7 +80,7 @@ export default function Login() {
                 <img
                     src={Camera}
                     alt="Surveillance"
-                    className='rounded-2xl h-full w-full object-cover max-h-200'
+                    className='rounded-2xl h-full w-full object-cover max-h-200 bg-(--muted)'
                     loading='lazy'
                 />
             </aside>
